@@ -1,0 +1,145 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>管理员子站 - facecheck</title>
+  <link rel="stylesheet" href="/static/style.css?v=20260313-04" />
+</head>
+<body class="admin-page">
+  <header class="topbar admin-topbar">
+    <div>
+      <h1 class="main-title">facecheck 管理台</h1>
+    </div>
+    <div class="status-wrap admin-topbar-actions">
+      <a href="/" class="btn">返回首页</a>
+      <button id="btnLogout" class="btn">退出登录</button>
+    </div>
+  </header>
+
+  <main class="layout admin-layout">
+    <section class="card admin-tabs">
+      <button id="tabRegister" class="btn primary" data-tab="register">注册人脸</button>
+      <button id="tabLibrary" class="btn" data-tab="library">人脸库</button>
+      <button id="tabOps" class="btn" data-tab="ops">操作记录</button>
+    </section>
+
+    <section id="panelRegister" class="card tab-panel active">
+      <div class="card-head">
+        <h2>注册人脸</h2>
+        <span id="cameraSupport" class="tag">检测中</span>
+      </div>
+      <div class="admin-register-grid">
+        <div>
+          <div class="row gap admin-toolbar">
+            <button id="btnDetectCameras" class="btn">检测摄像头</button>
+            <select id="cameraSelect"></select>
+          </div>
+          <div class="row gap admin-toolbar">
+            <button id="btnStartPreview" class="btn primary">打开摄像头</button>
+            <button id="btnStopPreview" class="btn">关闭摄像头</button>
+            <button id="btnRotate90" class="btn icon-btn" title="旋转90度">↻</button>
+          </div>
+          <div class="admin-video-wrap">
+            <video id="cameraPreview" autoplay playsinline muted></video>
+          </div>
+        </div>
+
+        <div>
+          <label class="field" for="nameInput">
+            <span>姓名（必填）</span>
+            <input id="nameInput" type="text" maxlength="64" placeholder="例如：wjz" />
+          </label>
+          <label class="field" for="emailInput">
+            <span>邮箱（必填）</span>
+            <input id="emailInput" type="email" maxlength="254" placeholder="例如：wjz@example.com" />
+          </label>
+          <label class="field" for="noteInput">
+            <span>备注（可选）</span>
+            <input id="noteInput" type="text" maxlength="128" placeholder="例如：实验室成员" />
+          </label>
+          <div class="row gap">
+            <button id="btnCapture" class="btn">拍照</button>
+            <button id="btnRetake" class="btn">重拍</button>
+            <button id="btnRegisterFace" class="btn primary">提交注册</button>
+          </div>
+          <p id="registerMsg" class="muted"></p>
+          <div class="snapshot-box">
+            <div id="capturePlaceholder" class="snapshot-placeholder">尚未拍照，点击“拍照”生成预览</div>
+            <img id="capturePreview" alt="采集预览" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panelLibrary" class="card tab-panel">
+      <div class="card-head">
+        <h2>人脸库管理</h2>
+        <div class="row gap">
+          <input id="faceSearchInput" type="text" placeholder="搜索姓名或邮箱" />
+          <button id="btnRefreshFaces" class="btn">刷新</button>
+        </div>
+      </div>
+      <div class="table-scroll admin-table-scroll">
+        <table class="admin-face-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>姓名</th>
+              <th>邮箱</th>
+              <th>注册时间</th>
+              <th>样本</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="facesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="panelOps" class="card tab-panel">
+      <div class="card-head">
+        <h2>操作记录</h2>
+        <div class="row gap">
+          <select id="opsTypeFilter">
+            <option value="">全部类型</option>
+            <option value="注册">注册</option>
+            <option value="改名">改名</option>
+            <option value="邮箱">邮箱</option>
+            <option value="删除">删除</option>
+            <option value="系统">系统</option>
+          </select>
+          <input id="opsKeywordInput" type="text" placeholder="搜索对象或详情" />
+          <button id="btnRefreshOps" class="btn">刷新</button>
+        </div>
+      </div>
+      <div class="table-scroll admin-table-scroll">
+        <table class="ops-table">
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>操作</th>
+              <th>对象</th>
+              <th>结果</th>
+              <th>详情</th>
+            </tr>
+          </thead>
+          <tbody id="opsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card full">
+      <div class="card-head">
+        <h2>消息</h2>
+      </div>
+      <pre id="logBox"></pre>
+    </section>
+  </main>
+
+  <script src="/static/admin.js?v=20260317-01"></script>
+</body>
+</html>

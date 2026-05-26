@@ -1,0 +1,35 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>管理员登录 - facecheck</title>
+  <link rel="stylesheet" href="/static/style.css?v=20260307-06" />
+</head>
+<body>
+  <main class="auth-wrap">
+    <section class="auth-card">
+      <h1>管理员登录</h1>
+      <p class="sub">进入人脸注册与管理子站</p>
+
+      <form id="loginForm">
+        <label class="field" for="passwordInput">
+          <span>管理员密码</span>
+          <input id="passwordInput" type="password" autocomplete="current-password" placeholder="请输入管理员密码" />
+        </label>
+        <div class="row gap">
+          <button type="submit" class="btn primary">登录</button>
+          <a href="/" class="btn">返回首页</a>
+        </div>
+      </form>
+
+      <p id="loginMsg" class="muted"></p>
+    </section>
+  </main>
+
+  <script src="/static/admin_login.js?v=20260303-16"></script>
+</body>
+</html>

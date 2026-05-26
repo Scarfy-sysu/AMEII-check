@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local configuration and secrets
+.env
+*.pem
+*.key
+deploy/certs/
+
+# Runtime data
+*.db
+*.sqlite
+*.sqlite3
+data/*
+!data/.gitkeep
+save_images/
+logs/
+*.log
+tmp_*
+*_cookie.txt
+
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

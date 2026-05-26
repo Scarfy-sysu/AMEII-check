@@ -1,0 +1,65 @@
+services:
+  webcam-ws:
+    build:
+      context: ..
+      dockerfile: services/inference/Dockerfile
+    container_name: facecheck-webcam-ws
+    restart: unless-stopped
+    environment:
+      - DB_PATH=/data/face_database.db
+      - CAM_SOURCE=${CAM_SOURCE:-cam1}
+      - FEATURE_RELOAD_INTERVAL_SEC=${FEATURE_RELOAD_INTERVAL_SEC:-2.0}
+      - ACTION_CONFIRM_FRAMES=${ACTION_CONFIRM_FRAMES:-3}
+      - FACE_DISTANCE_THRESHOLD=${FACE_DISTANCE_THRESHOLD:-0.75}
+      - FACE_MARGIN_THRESHOLD=${FACE_MARGIN_THRESHOLD:-0.06}
+      - WEB_ANALYSIS_WIDTH=${WEB_ANALYSIS_WIDTH:-640}
+      - WEB_ANALYSIS_HEIGHT=${WEB_ANALYSIS_HEIGHT:-360}
+      - WEB_RESULT_JPEG_QUALITY=${WEB_RESULT_JPEG_QUALITY:-70}
+      - WEB_GESTURE_SCORE_THRESH=${WEB_GESTURE_SCORE_THRESH:-0.48}
+      - DISPLAY_TZ_OFFSET_HOURS=${DISPLAY_TZ_OFFSET_HOURS:-8}
+    volumes:
+      - ../data:/data
+    ports:
+      - "127.0.0.1:8765:8765"
+
+  api:
+    build:
+      context: ..
+      dockerfile: services/api/Dockerfile
+    container_name: facecheck-api
+    restart: unless-stopped
+    depends_on:
+      - webcam-ws
+    environment:
+      - DB_PATH=/data/face_database.db
+      - WEBCAM_WS_BACKEND=ws://webcam-ws:8765/ws/camera
+      - WEBCAM_INTERNAL_REGISTER_URL=http://webcam-ws:8765/internal/register-face
+      - WEBCAM_INTERNAL_INFER_URL=http://webcam-ws:8765/internal/infer-frame
+      - USER_PASSWORD=${USER_PASSWORD:-facecheck-user}
+      - USER_TOKEN_TTL_SEC=${USER_TOKEN_TTL_SEC:-86400}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-facecheck-admin}
+      - ADMIN_TOKEN_TTL_SEC=${ADMIN_TOKEN_TTL_SEC:-43200}
+      - ADMIN_COOKIE_SECURE=${ADMIN_COOKIE_SECURE:-auto}
+      - EXTERNAL_SYNC_ENABLED=${EXTERNAL_SYNC_ENABLED:-0}
+      - EXTERNAL_SYNC_URL=${EXTERNAL_SYNC_URL:-}
+      - EXTERNAL_SYNC_SECRET=${EXTERNAL_SYNC_SECRET:-}
+      - EXTERNAL_SYNC_BEARER_TOKEN=${EXTERNAL_SYNC_BEARER_TOKEN:-}
+      - EXTERNAL_SYNC_TIMEOUT_SEC=${EXTERNAL_SYNC_TIMEOUT_SEC:-8}
+      - EXTERNAL_SYNC_MAX_ATTEMPTS=${EXTERNAL_SYNC_MAX_ATTEMPTS:-6}
+      - EXTERNAL_SYNC_POLL_SEC=${EXTERNAL_SYNC_POLL_SEC:-2}
+      - ATTENDANCE_RETENTION_DAYS=${ATTENDANCE_RETENTION_DAYS:-3}
+      - AUTO_CHECKOUT_DAYS=${AUTO_CHECKOUT_DAYS:-3}
+      - ONLINE_INVALIDATE_HOURS=${ONLINE_INVALIDATE_HOURS:-6}
+      - MAINTENANCE_POLL_SEC=${MAINTENANCE_POLL_SEC:-60}
+      - DISPLAY_TZ_OFFSET_HOURS=${DISPLAY_TZ_OFFSET_HOURS:-8}
+    volumes:
+      - ../data:/data
+    command:
+      - uvicorn
+      - app:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    ports:
+      - "8000:8000"

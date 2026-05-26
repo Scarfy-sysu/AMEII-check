@@ -1,0 +1,129 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>facecheck 控制台</title>
+  <link rel="stylesheet" href="/static/style.css?v=20260314-01" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1 class="main-title" id="homeTitle">facecheck 控制台</h1>
+    </div>
+    <div class="status-wrap">
+      <span id="themeModeTag" class="badge">主题: 夜间</span>
+      <button id="btnSettings" class="btn" type="button" aria-haspopup="true" aria-expanded="false">设置</button>
+      <a href="/admin/login" class="btn">管理员入口</a>
+      <div id="settingsPopover" class="settings-popover" hidden>
+        <div class="settings-popover-title">设置</div>
+        <div class="settings-item">
+          <span class="settings-item-label">白天模式</span>
+          <label class="switch">
+            <input id="themeAutoToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <span class="settings-item-label">卡片模式</span>
+          <label class="switch">
+            <input id="onlineModeToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <span class="settings-item-label">预览模式</span>
+          <label class="switch">
+            <input id="previewModeToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="card camera-main">
+      <div class="row gap">
+        <button id="btnDetectCameras" class="btn">检测摄像头</button>
+        <select id="cameraSelect"></select>
+        <button id="btnTogglePreview" class="btn primary">打开摄像头</button>
+        <button id="btnRotate90" class="btn icon-btn" title="旋转90度">↻</button>
+        <button id="btnMirrorX" class="btn icon-btn" title="左右镜像（当前：关）">⇋</button>
+        <span id="autoStopCountdown" class="tag countdown-tag" style="display:none;">自动关闭倒计时: 05:00</span>
+      </div>
+      <div class="preview-stack">
+        <video id="cameraPreview" autoplay playsinline muted></video>
+        <canvas id="overlayCanvas"></canvas>
+      </div>
+    </section>
+
+    <div class="right-stack">
+      <section class="card pending-side">
+        <div class="card-head">
+          <h2 id="pendingTitle">待确认动作</h2>
+        </div>
+        <div id="pendingBody" class="pending-list"></div>
+      </section>
+
+      <section class="card online-side">
+        <div class="card-head">
+          <h2 id="onlineTitle">在线状态</h2>
+        </div>
+        <table id="onlineTable" class="online-table">
+          <thead>
+            <tr>
+              <th>姓名</th>
+              <th>签到时间</th>
+              <th>在线时长</th>
+              <th>今日时长</th>
+            </tr>
+          </thead>
+          <tbody id="onlineBody"></tbody>
+        </table>
+        <div id="onlineDeckWrap" class="online-deck-wrap" hidden>
+          <div id="onlineDeckViewport" class="online-deck-viewport"></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card bottom-pane">
+      <div class="card-head">
+        <h2>签到/签退记录</h2>
+        <button id="btnRefreshRecords" class="btn">刷新</button>
+      </div>
+      <div class="table-scroll records-scroll">
+        <table class="records-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>姓名</th>
+              <th>动作</th>
+              <th>时间</th>
+              <th>时长</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card bottom-pane">
+      <div class="card-head">
+        <h2>消息</h2>
+      </div>
+      <pre id="logBox"></pre>
+    </section>
+  </main>
+
+  <div id="invalidReasonToast" class="invalid-reason-toast" hidden>
+    <div class="title">操作无效</div>
+    <div id="invalidReasonText" class="text"></div>
+  </div>
+
+  <script src="/static/app.js?v=20260314-01"></script>
+</body>
+</html>
