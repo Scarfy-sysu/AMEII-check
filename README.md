@@ -1,136 +1,140 @@
 # AMEII-check
 
-AMEII-check 是一个面向实验室、课程、小团队和活动现场的人脸签到/签退系统。它把浏览器摄像头采集、服务端人脸识别、手势识别、人工确认、在线状态和打卡统计整合在一个网页里：用户打开网页即可启动摄像头，管理员可以在网页端注册人脸，多样本补录提升稳定性，签到/签退记录会自动沉淀到本地数据库。
+AMEII-check 是一个网页版人脸签到系统。它把浏览器摄像头、服务端人脸识别、手势识别、人工确认、在线状态和打卡记录放在同一个页面里。用户打开网页就能开摄像头，管理员也可以直接在网页里注册人脸、补录样本和管理人脸库。
 
-这个公开版不包含任何私有服务器地址、账号、密码、真实人脸库或主网站密钥。外部系统同步默认关闭，只保留通用接口，方便你接入自己的平台。
+这个仓库是公开版。里面不包含真实服务器地址、账号、密码、token、人脸数据库或注册照片。外部系统同步默认关闭，如果你需要把签到结果发给自己的平台，可以按 `docs/EXTERNAL_SYNC.md` 自行接入。
 
-## Features
+## 主要功能
 
-- 浏览器摄像头采集：不需要本地推流工具，网页直接采集画面并发送到服务端识别。
-- 服务端识别框叠加：前端显示本地实时画面，服务端返回人脸框、手势框和识别结果后叠加显示。
-- 人脸签到/签退：识别到用户后，根据当前在线状态自动推荐签到或签退。
-- 手势辅助确认：支持手势识别逻辑，可结合待确认卡片完成签到/签退流程。
-- 管理台注册人脸：管理员可注册用户、填写邮箱、补录多张人脸样本、管理人脸库。
-- 在线状态统计：显示在线用户、签到时间、在线时长、今日时长。
-- 记录管理：保存最近签到/签退记录，并自动计算签退时长。
-- 可选外部同步：确认签到/签退后可通知第三方系统，默认关闭。
+- 浏览器直接调用摄像头，不需要本地推流工具。
+- 服务端做人脸和手势识别，前端把识别框叠加到实时画面上。
+- 识别到用户后，系统会根据当前在线状态推荐签到或签退。
+- 待确认动作以卡片形式显示，需要确认后才会写入记录。
+- 管理台支持注册人脸、填写邮箱、补录多张样本和管理人脸库。
+- 在线状态会显示签到时间、在线时长和今日时长。
+- 签退时自动计算本次打卡时长。
+- 可选外部同步接口，默认不启用。
 
-## Project Structure
+## 目录结构
 
 ```text
 AMEII-check/
-  services/api/          # Web console, login, admin pages, attendance API
-  services/inference/    # Browser-camera inference WebSocket service
-  deploy/                # Docker Compose and deployment helpers
-  docs/                  # Optional integration docs
-  data/                  # Runtime database directory, not committed
-  DB.py                  # SQLite database layer
-  FaceRecognition.py     # Face recognition logic
-  gesture_utils.py       # Gesture recognition helper
+  services/api/          # 网页、登录、管理台、签到接口
+  services/inference/    # 浏览器摄像头推理服务
+  deploy/                # Docker Compose 和部署脚本
+  docs/                  # 外部同步说明
+  data/                  # 运行时数据库目录，不提交真实数据
+  DB.py                  # SQLite 数据库逻辑
+  FaceRecognition.py     # 人脸识别逻辑
+  gesture_utils.py       # 手势识别逻辑
   gesture_recognizer.task
 ```
 
-## Quick Start With Docker
+## 用 Docker 启动
 
-### 1. Install Requirements
+推荐先用 Docker 跑起来。这样环境最少，出错点也少。
 
-Install:
+### 1. 准备环境
+
+需要安装：
 
 - Docker
 - Docker Compose
-- A modern browser, such as Chrome or Edge
+- Chrome、Edge 或其他支持摄像头权限的现代浏览器
 
-### 2. Clone
+### 2. 克隆仓库
 
 ```bash
 git clone <your-repository-url> AMEII-check
 cd AMEII-check
 ```
 
-### 3. Create Local Config
+### 3. 创建配置文件
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` and change at least:
+打开 `.env`，至少改掉这两个密码：
 
 ```bash
 USER_PASSWORD=your-user-password
 ADMIN_PASSWORD=your-admin-password
 ```
 
-Do not commit `.env`.
+不要把 `.env` 提交到 GitHub。
 
-### 4. Start Services
+### 4. 启动服务
 
 ```bash
 cd deploy
 docker compose --env-file ../.env up --build -d
 ```
 
-### 5. Open The Web Console
+### 5. 打开网页
 
-Open:
+浏览器访问：
 
 ```text
 http://localhost:8000
 ```
 
-Login with `USER_PASSWORD`.
+使用 `.env` 里的 `USER_PASSWORD` 登录首页。
 
-Open the admin page from the top-right admin entry, then login with `ADMIN_PASSWORD`.
+右上角进入管理台，使用 `ADMIN_PASSWORD` 登录。
 
-Docker exposes the web console on `8000`. The inference service is bound to `127.0.0.1:8765` by default, so the API can use it locally but other devices on the LAN cannot call it directly.
+Docker 默认只把网页服务暴露在 `8000` 端口。推理服务绑定在 `127.0.0.1:8765`，API 可以通过 Docker 内网访问它，但局域网里的其他设备不能直接调用推理服务。
 
-### 6. Register A Face
+### 6. 注册人脸
 
-1. Enter the admin page.
-2. Open the camera preview.
-3. Fill in name and email.
-4. Click capture.
-5. Submit registration.
-6. Use "add sample" to record more face samples for the same user.
+1. 进入管理台。
+2. 打开摄像头预览。
+3. 填写姓名和邮箱。
+4. 点击拍照。
+5. 提交注册。
+6. 如果想提高识别稳定性，可以给同一个人继续补录样本。
 
-### 7. Start Attendance
+### 7. 开始签到
 
-1. Return to the main console.
-2. Click "open camera".
-3. Wait for face boxes and recognition results.
-4. Confirm or reject the pending attendance card.
-5. View online status and attendance records.
+1. 回到首页。
+2. 点击打开摄像头。
+3. 等待人脸框和识别结果出现。
+4. 在待确认卡片上点击确认或驳回。
+5. 在在线状态和签到记录里查看结果。
 
-## Local Python Development
+## 本地 Python 开发
 
-Use Python 3.10.
+如果你要改代码或调试细节，可以用本地 Python 启动。建议使用 Python 3.10。
 
-### 1. Create Environment
+### 1. 创建虚拟环境
+
+Linux 或 macOS：
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 ```
 
-On Windows PowerShell:
+Windows PowerShell：
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-### 2. Install Dependencies
+### 2. 安装依赖
 
 ```bash
 pip install -r services/api/requirements.txt -r services/inference/requirements.txt
 ```
 
-### 3. Create Config
+### 3. 创建配置
 
 ```bash
 cp .env.example .env
 ```
 
-For local development, set:
+本地开发通常使用下面这些地址：
 
 ```bash
 DB_PATH=./data/face_database.db
@@ -139,9 +143,9 @@ WEBCAM_INTERNAL_REGISTER_URL=http://127.0.0.1:8765/internal/register-face
 WEBCAM_INTERNAL_INFER_URL=http://127.0.0.1:8765/internal/infer-frame
 ```
 
-### 4. Start Inference Service
+### 4. 启动推理服务
 
-Terminal 1:
+终端 1：
 
 ```bash
 set -a
@@ -150,7 +154,7 @@ set +a
 python -m uvicorn services.inference.webcam_server:app --host 0.0.0.0 --port 8765
 ```
 
-On Windows PowerShell:
+Windows PowerShell：
 
 ```powershell
 $env:DB_PATH="./data/face_database.db"
@@ -158,9 +162,9 @@ $env:CAM_SOURCE="cam1"
 python -m uvicorn services.inference.webcam_server:app --host 0.0.0.0 --port 8765
 ```
 
-### 5. Start API Service
+### 5. 启动 API 服务
 
-Terminal 2:
+终端 2：
 
 ```bash
 set -a
@@ -169,7 +173,7 @@ set +a
 python -m uvicorn services.api.app:app --host 0.0.0.0 --port 8000
 ```
 
-On Windows PowerShell:
+Windows PowerShell：
 
 ```powershell
 $env:DB_PATH="./data/face_database.db"
@@ -181,116 +185,118 @@ $env:ADMIN_PASSWORD="facecheck-admin"
 python -m uvicorn services.api.app:app --host 0.0.0.0 --port 8000
 ```
 
-Open:
+然后访问：
 
 ```text
 http://localhost:8000
 ```
 
-## Camera Permission
+## 摄像头权限
 
-Browser camera access works directly on:
+浏览器对摄像头权限比较严格。下面几种情况通常可以正常使用：
 
 - `http://localhost`
 - `http://127.0.0.1`
-- HTTPS pages
+- HTTPS 页面
 
-If you visit the site from another phone or computer on the LAN, use HTTPS. You can generate a self-signed certificate:
+如果你想在手机或另一台电脑上访问，需要使用 HTTPS。可以先生成自签名证书：
 
 ```bash
 cd deploy
 bash generate_self_signed_cert.sh <your-server-ip>
 ```
 
-Then place the API behind HTTPS or adjust your Uvicorn command to use the generated certificate.
+之后可以把 API 放到 HTTPS 反向代理后面，或者自己调整 Uvicorn 启动命令，加载生成的证书。
 
-## External Sync
+## 外部系统同步
 
-External sync is disabled by default:
+默认不会向外部系统发送签到结果：
 
 ```bash
 EXTERNAL_SYNC_ENABLED=0
 ```
 
-To connect your own platform, read:
+如果你要接入自己的主站、课程平台或实验室系统，阅读：
 
 ```text
 docs/EXTERNAL_SYNC.md
 ```
 
-The public repository does not include a real external URL, token, bearer token, or private server address.
+公开仓库不会内置任何真实外部接口地址、token 或服务器信息。
 
-## Sensitive Files
+## 不要提交这些文件
 
-Do not commit:
+下面这些文件可能包含隐私或运行数据，不应该上传到 GitHub：
 
 - `.env`
 - `data/face_database.db`
-- face photos or captured samples
-- certificates and private keys
-- tokens, passwords, cookies, logs, temporary files
+- 人脸照片或截图样本
+- 证书和私钥
+- token、密码、cookie、日志、临时文件
 
-The included `.gitignore` already blocks common runtime files.
+仓库里的 `.gitignore` 已经默认忽略这些内容。
 
-## Security Notes
+## 安全建议
 
-- Change `USER_PASSWORD` and `ADMIN_PASSWORD` before sharing the site with other users.
-- Keep `EXTERNAL_SYNC_ENABLED=0` unless you have configured your own trusted endpoint.
-- Do not expose port `8765` to the LAN or public internet. It is an internal inference service.
-- Use HTTPS when accessing the site from phones or other computers on the same network.
-- Treat `data/face_database.db` as sensitive biometric data. Back it up carefully and never publish it.
+- 部署前一定要修改 `USER_PASSWORD` 和 `ADMIN_PASSWORD`。
+- 不接外部系统时，保持 `EXTERNAL_SYNC_ENABLED=0`。
+- 不要把 `8765` 端口暴露到局域网或公网，它只是内部推理服务。
+- 手机或其他电脑访问时，尽量使用 HTTPS。
+- `data/face_database.db` 里会保存人脸特征和注册图片，按敏感数据处理。
 
-## FAQ
+## 常见问题
 
-### The camera cannot be opened
+### 摄像头打不开
 
-Use `localhost` or HTTPS. Browser `getUserMedia` is usually blocked on plain HTTP LAN addresses.
+先确认你是在 `localhost`、`127.0.0.1` 或 HTTPS 页面中访问。普通 HTTP 局域网地址经常会被浏览器禁止摄像头权限。
 
-### The camera opens but no recognition box appears
+### 摄像头打开了，但没有识别框
 
-Check the inference service:
+先检查推理服务：
 
 ```bash
 curl http://localhost:8765/health
 ```
 
-Then check API health:
+再检查 API：
 
 ```bash
 curl http://localhost:8000/health
 ```
 
-### How do I change login passwords?
+两个接口都应该返回 JSON，并且包含 `"ok": true`。
 
-Edit `.env`:
+### 怎么修改登录密码
+
+编辑 `.env`：
 
 ```bash
 USER_PASSWORD=your-user-password
 ADMIN_PASSWORD=your-admin-password
 ```
 
-Restart the services after changing passwords.
+修改后重启服务。
 
-### How do I clear all local data?
+### 怎么清空本地数据
 
-Stop services, then delete:
+停止服务后删除：
 
 ```text
 data/face_database.db
 ```
 
-The database will be recreated on the next start.
+下次启动时系统会自动创建新的数据库。
 
-### How do I add more samples for one person?
+### 一个人能录入多张样本吗
 
-Open the admin page, find the user in the face library, and use the add-sample function. Multiple samples usually improve recognition stability under different lighting, angles, and distance.
+可以。进入管理台，在人脸库里找到这个用户，使用补样本功能继续录入。多样本通常能改善不同光照、角度和距离下的识别效果。
 
-### How do I disable external sync?
+### 怎么关闭外部同步
 
-Set:
+保持下面这个配置即可：
 
 ```bash
 EXTERNAL_SYNC_ENABLED=0
 ```
 
-This is the default behavior.
+这是默认设置。
