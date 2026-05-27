@@ -62,8 +62,6 @@ USER_PASSWORD=your-user-password
 ADMIN_PASSWORD=your-admin-password
 ```
 
-不要把 `.env` 提交到 GitHub。
-
 ### 4. 启动服务
 
 ```bash
